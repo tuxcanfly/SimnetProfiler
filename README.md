@@ -5,11 +5,11 @@ Network Data and Metrics from the Conformal Simnet
 
 Status:
 
-  Finishing Set Struct and Methods for Unique Transactions
+  * Finishing Set Struct and Methods for Unique Transactions
   
 Theory of Operation:
 
-  Process will listen into the Simnetwork via btcd at arbitrary times (network "mile markers")
+  * Process will listen into the Simnetwork via btcd at arbitrary times (network "mile markers")
   count transactions over a window of time and report results.
   Number of transactions, fee size and blockchain bloat under consideration for measurement 
   and reporting.
