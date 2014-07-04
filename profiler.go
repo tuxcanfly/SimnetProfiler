@@ -69,6 +69,7 @@ func main() {
 					break
 				}
 
+				log.Println("Checking Transactions")
 				var TxnFound bool = true
 
 				for i := range TxnArray {
@@ -81,17 +82,18 @@ func main() {
 
 					}
 
-					if TxnFound == false {
-						EndTime := time.Now().Unix()
-						delta := float64((StartTime - EndTime))
-						
-						if delta == 0 {
-							delta = float64(0.00000001) // at least a satoshi
-						}
-						tps := 100.0 / delta 
-						log.Printf("Transactions per second: %d", tps)
-						break
+				}
+
+				if TxnFound == false {
+					EndTime := time.Now().Unix()
+					delta := float64((StartTime - EndTime))
+
+					if delta == 0 {
+						delta = float64(0.00000001) // at least a satoshi
 					}
+					tps := 100.0 / delta
+					log.Printf("Transactions per second: %d", tps)
+					break
 				}
 			}
 		}
