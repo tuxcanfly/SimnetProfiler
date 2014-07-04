@@ -3,6 +3,7 @@
 package main
 
 import (
+	"github.com/conformal/btcjson"
 	"github.com/conformal/btcrpcclient"
 	"github.com/conformal/btcutil"
 	"io/ioutil"
@@ -15,6 +16,47 @@ import (
 
 func TimeStampUnix() int32 {
 	return int32(time.Now().Unix())
+}
+
+type HashSet struct {
+	data map[[]btcjson.ListTransactionsResult]bool
+}
+
+func (this *HashSet) Add(value btcjson.ListTransactionsResult) {
+	this.data[value] = true
+}
+
+func (this *HashSet) Contains(value btcjson.ListTransactionsResult) (exists bool) {
+	_, exists = this.data[value]
+	return
+}
+
+func (this *HashSet) Length() int {
+	return len(this.data)
+}
+
+func (this *HashSet) RemoveDuplicates() {}
+
+func NewSet() Set {
+	return &HashSet{make(map[btcjson.ListTransactionsResult]bool)}
+}
+
+func (this *OnDemandArraySet) Add(value int) {
+	//the append method will automatically grow our array if needed
+	this.data = append(this.data, value)
+}
+func (this *OnDemandArraySet) RemoveDuplicates() {
+	length := len(this.data) - 1
+	for i := 0; i < length; i++ {
+		for j := i + 1; j <= length; j++ {
+			if this.data[i] == this.data[j] {
+				this.data[j] = this.data[length]
+				this.data = this.data[0:length]
+				length--
+				j--
+			}
+		}
+	}
 }
 
 func main() {
@@ -50,19 +92,28 @@ func main() {
 
 	client.NotifyNewTransactions(true)
 
-	StartTimeStamp := time.Now()
-	data, err := client.ListTransactionsCount("", 1)
+	for {
+		StartTime := TimeStampUnix()
+		data, err := client.ListTransactionsCount("", 10)
+		txn := data[0]
 
-	if err != nil {
-		log.Printf("ListTransactionsCount RPC Error: %s", err)
-
-	} else {
-		txid := data[0]
-		log.Printf("At Time: %s", StartTimeStamp)
-		log.Printf("Transactions Count: %s \n", txid)
-
+		if err != nil {
+			log.Printf("ListTransactionsCount RPC Error: %s", err)
+			break
+		} else {
+			for {
+				result = TxnInSlice(txn, client.ListTransactionsCount("", 10))
+				if result == false {
+					EndTime := TimeStampUnix()
+					tps = 10 / (StartTime - EndTime)
+					log.Printf("Transactions per second: %d", tps)
+					break
+				}
+			}
+		}
 	}
 
+	// shutdown with ctrl-c
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
