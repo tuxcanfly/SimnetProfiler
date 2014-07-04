@@ -1,37 +1,52 @@
 package main
 
-import "github.com/conformal/btcjson"
-import "fmt"
-import "strconv"
+import (
+       "github.com/conformal/btcjson"
+       "fmt"
 
+       )
+
+// converts struct to a hopefully unique comma deliminated string
 func Serialize(item btcjson.ListTransactionsResult) string {
-	amt := strconv.FormatFloat(item.Amount)
-	fee := strconv.FormatFloat(item.Fee)
-	return item.Address+','+amt+','+fee
+	amt := fmt.Sprintf("%.8f", item.Amount)
+	fee := fmt.Sprintf("%.8f", item.Fee)
+	return item.Address+","+amt+","+fee
 }
 
-func SerializeTransactions(data []btcjson.ListTransactionsResult} []string {
-	result := []string
-	for _, i := data {
-		result.Add(Serialize(i))
+// converts 100 transactions struct array to string slice
+func SerializeTransactions(data []btcjson.ListTransactionsResult) []string {
+	result := make([]string, 0, 100)
+
+	for i := 0; i < 100; i++ {
+		result[i] = Serialize(data[i])
 	}
 	return result
 }
 	
 
+// basic Set data structure
+// works with strings for reasons of comparison operations
 type Set struct {
-  data []btcjson.ListTransactionsResult
+  data []string
 }
 
-func (this *Set) Add(element btcjson.ListTransactionsResult) {
+// add element to set
+func (this *Set) Add(element string) {
   this.data = append(this.data, element)
 }
 
+// remove element from set
+func (this *Set) Remove(element string) (bool) {
+  for _, elem:= range this.data {
+    if elem == element {
+      return true
+    }
+  }
+  return false
+}
 
-
-
-
-func (this *Set) Remove(element btcjson.ListTransactionsResult) (bool) {
+// test if element is member of the set
+func (this *Set) IsMember(element string) (bool) {
   for _, elem:= range this.data {
     if elem== element {
       return true
@@ -40,19 +55,12 @@ func (this *Set) Remove(element btcjson.ListTransactionsResult) (bool) {
   return false
 }
 
-
-func (this *Set) IsMember(element btcjson.ListTransactionsResult) (bool) {
-  for _, elem:= range this.data {
-    if elem== element {
-      return true
-    }
-  }
-  return false
-}
-
-func (this *Set) Length() (btcjson.ListTransactionsResult) {
+// report length of the set
+func (this *Set) Length() (int) {
   return len(this.data)
 }
+
+// remove duplicates in the set
 func (this *Set) Deduplicate() {
   length := len(this.data) - 1
   for i := 0; i < length; i++ {
@@ -68,6 +76,13 @@ func (this *Set) Deduplicate() {
 }
 
 
-func MakeNewSet() (Set) {
-  return &Set{make([]btcjson.ListTransactionsResult, 0, 100)}
+// create new set of initial size zero and capacity 100
+// adjust for proper network sampling conditions
+func MakeNewSet() Set {
+  return Set{make([]string, 0, 100)}
 }
+
+func main(){
+	fmt.Println("Testing 123")
+}
+	
