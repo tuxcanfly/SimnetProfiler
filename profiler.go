@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/conformal/btcjson"
 	"github.com/conformal/btcrpcclient"
 	"github.com/conformal/btcutil"
@@ -12,7 +13,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"time"
-	"fmt"
 )
 
 func Serialize(item btcjson.ListTransactionsResult) string {
@@ -74,16 +74,21 @@ func main() {
 				for i := range TxnArray {
 					if Serialize(TxnArray[i]) == Serialize(txn) {
 						TxnFound = true
-						continue
+						break
 					} else {
-						
+
 						TxnFound = false
-						
+
 					}
 
 					if TxnFound == false {
 						EndTime := time.Now().Unix()
-						tps := 100 / (StartTime - EndTime)
+						delta := float64((StartTime - EndTime))
+						
+						if delta == 0 {
+							delta = float64(0.00000001) // at least a satoshi
+						}
+						tps := 100.0 / delta 
 						log.Printf("Transactions per second: %d", tps)
 						break
 					}
