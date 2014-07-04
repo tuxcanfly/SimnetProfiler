@@ -32,13 +32,13 @@ func main() {
 	}
 
 	// Connect to local btcwallet RPC server using websockets.
-	certHomeDir := btcutil.AppDataDir("btcwallet", false)
+	certHomeDir := btcutil.AppDataDir("btcd", false)
 	certs, err := ioutil.ReadFile(filepath.Join(certHomeDir, "rpc.cert"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	connCfg := &btcrpcclient.ConnConfig{
-		Host:         "localhost:18554",
+		Host:         "localhost:18556",
 		Endpoint:     "ws",
 		User:         "rpcuser",
 		Pass:         "rpcpass",
@@ -55,8 +55,8 @@ func main() {
 		StartTime := time.Now().Unix()
 		data, err := client.ListTransactionsCount("", 100)
 		txn := data[0]
+		
 		// Client
-
 		if err != nil {
 			log.Printf("ListTransactionsCount RPC Error: %s", err)
 			break
@@ -92,7 +92,7 @@ func main() {
 						delta = float64(0.00000001) // at least a satoshi
 					}
 					tps := 100.0 / delta
-					log.Printf("Transactions per second: %d", tps)
+					log.Printf("Transactions per second: %f", tps)
 					break
 				}
 			}
