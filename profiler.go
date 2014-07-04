@@ -18,8 +18,6 @@ func TimeStampUnix() int32 {
 	return int32(time.Now().Unix())
 }
 
-
-
 func main() {
 
 	// Only override the handlers for notifications you care about.
