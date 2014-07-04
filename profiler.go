@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"time"
+	"os/exec"
 )
 
 
@@ -24,10 +25,11 @@ func Serialize(item btcjson.ListTransactionsResult) string {
 	return item.Address + "," + amt + "," + fee
 }
 
-connected := make(chan struct{}
+
 
 func main() {
-
+    connected := make(chan struct{})
+    var firstConn bool
 	// based off of btcwebsocket example for reference
 	ntfnHandlers := btcrpcclient.NotificationHandlers{		
 		OnBtcdConnected: func(conn bool) {
@@ -58,16 +60,15 @@ func main() {
 	
 	
     // Create the wallet.
+    var cmd *exec.Cmd
+    
 	if err := client.CreateEncryptedWallet("walletpass"); err != nil {
-		if err := a.cmd.Process.Kill(); err != nil {
+		if err := cmd.Process.Kill(); err != nil {
 			log.Printf("Cannot kill wallet process after failed "+
 				"wallet creation: %v", err)
+			
 		}
-		if err := a.Cleanup(); err != nil {
-			log.Printf("Cannot remove actor directory after "+
-				"failed wallet creation: %v", err)
-		}
-		return err
+		
 	}
 
 	client.NotifyNewTransactions(true)
