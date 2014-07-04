@@ -12,18 +12,18 @@ import (
 	"os/signal"
 	"path/filepath"
 	"time"
+	"fmt"
 )
 
-func TimeStampUnix() int32 {
-	return int32(time.Now().Unix())
+func Serialize(item btcjson.ListTransactionsResult) string {
+	amt := fmt.Sprintf("%.8f", item.Amount)
+	fee := fmt.Sprintf("%.8f", item.Fee)
+	return item.Address + "," + amt + "," + fee
 }
 
 func main() {
 
-	// Only override the handlers for notifications you care about.
-	// Also note most of the handlers will only be called if you register
-	// for notifications.  See the documentation of the btcrpcclient
-	// NotificationHandlers type for more details about each handler.
+	// based off of btcwebsocket example for reference
 	ntfnHandlers := btcrpcclient.NotificationHandlers{
 		OnAccountBalance: func(account string, balance btcutil.Amount, confirmed bool) {
 			log.Printf("New balance for account %s: %v", account,
@@ -52,21 +52,41 @@ func main() {
 	client.NotifyNewTransactions(true)
 
 	for {
-		StartTime := TimeStampUnix()
-		data, err := client.ListTransactionsCount("", 10)
+		StartTime := time.Now().Unix()
+		data, err := client.ListTransactionsCount("", 100)
 		txn := data[0]
+		// Client
 
 		if err != nil {
 			log.Printf("ListTransactionsCount RPC Error: %s", err)
 			break
 		} else {
+
 			for {
-				result = TxnInSlice(txn, client.ListTransactionsCount("", 10))
-				if result == false {
-					EndTime := TimeStampUnix()
-					tps = 10 / (StartTime - EndTime)
-					log.Printf("Transactions per second: %d", tps)
+				TxnArray, err := client.ListTransactionsCount("", 100)
+				if err != nil {
+					log.Printf("ListTransactionsCount RPC Error: %s", err)
 					break
+				}
+
+				var TxnFound bool = true
+
+				for i := range TxnArray {
+					if Serialize(TxnArray[i]) == Serialize(txn) {
+						TxnFound = true
+						continue
+					} else {
+						
+						TxnFound = false
+						
+					}
+
+					if TxnFound == false {
+						EndTime := time.Now().Unix()
+						tps := 100 / (StartTime - EndTime)
+						log.Printf("Transactions per second: %d", tps)
+						break
+					}
 				}
 			}
 		}
