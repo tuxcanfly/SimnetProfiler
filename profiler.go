@@ -52,23 +52,25 @@ func main() {
 	client.NotifyNewTransactions(true)
 
 	for {
+		log.Println("LN 55")
 		StartTime := time.Now().Unix()
 		data, err := client.ListTransactionsCount("", 100)
-		txn := data[0]
 		
+		log.Println("LN 59")
 		// Client
 		if err != nil {
 			log.Printf("ListTransactionsCount RPC Error: %s", err)
 			break
 		} else {
-
+            txn := data[0]
 			for {
+				log.Println("LN 67")
 				TxnArray, err := client.ListTransactionsCount("", 100)
 				if err != nil {
 					log.Printf("ListTransactionsCount RPC Error: %s", err)
 					break
 				}
-
+                log.Println("LN 73")
 				log.Println("Checking Transactions")
 				var TxnFound bool = true
 
