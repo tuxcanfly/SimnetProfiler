@@ -18,46 +18,7 @@ func TimeStampUnix() int32 {
 	return int32(time.Now().Unix())
 }
 
-type HashSet struct {
-	data map[[]btcjson.ListTransactionsResult]bool
-}
 
-func (this *HashSet) Add(value btcjson.ListTransactionsResult) {
-	this.data[value] = true
-}
-
-func (this *HashSet) Contains(value btcjson.ListTransactionsResult) (exists bool) {
-	_, exists = this.data[value]
-	return
-}
-
-func (this *HashSet) Length() int {
-	return len(this.data)
-}
-
-func (this *HashSet) RemoveDuplicates() {}
-
-func NewSet() Set {
-	return &HashSet{make(map[btcjson.ListTransactionsResult]bool)}
-}
-
-func (this *OnDemandArraySet) Add(value int) {
-	//the append method will automatically grow our array if needed
-	this.data = append(this.data, value)
-}
-func (this *OnDemandArraySet) RemoveDuplicates() {
-	length := len(this.data) - 1
-	for i := 0; i < length; i++ {
-		for j := i + 1; j <= length; j++ {
-			if this.data[i] == this.data[j] {
-				this.data[j] = this.data[length]
-				this.data = this.data[0:length]
-				length--
-				j--
-			}
-		}
-	}
-}
 
 func main() {
 
