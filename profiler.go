@@ -1,23 +1,23 @@
-// simnet network profiler
+// Copyright (c) 2014 Conformal Systems LLC.
+// Use of this source code is governed by an ISC
+// license that can be found in the LICENSE file.
 
 package main
 
 import (
-	"fmt"
-	"github.com/conformal/btcjson"
-	"github.com/conformal/btcrpcclient"
-	"github.com/conformal/btcutil"
+    "fmt"
+    "github.com/conformal/btcjson"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/signal"
 	"path/filepath"
 	"time"
-	"os/exec"
+	"os/signal"
+	"os"
+
+	"github.com/conformal/btcrpcclient"
+	"github.com/conformal/btcutil"
+	//"github.com/davecgh/go-spew/spew"
 )
-
-
-
 
 func Serialize(item btcjson.ListTransactionsResult) string {
 	amt := fmt.Sprintf("%.8f", item.Amount)
@@ -25,10 +25,8 @@ func Serialize(item btcjson.ListTransactionsResult) string {
 	return item.Address + "," + amt + "," + fee
 }
 
-
-
 func main() {
-    connected := make(chan struct{})
+   connected := make(chan struct{})
     var firstConn bool
 	// based off of btcwebsocket example for reference
 	ntfnHandlers := btcrpcclient.NotificationHandlers{		
@@ -57,42 +55,30 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
-	
-    // Create the wallet.
-    var cmd *exec.Cmd
-    
-	if err := client.CreateEncryptedWallet("walletpass"); err != nil {
-		if err := cmd.Process.Kill(); err != nil {
-			log.Printf("Cannot kill wallet process after failed "+
-				"wallet creation: %v", err)
-			
-		}
-		
-	}
 
-	client.NotifyNewTransactions(true)
+
+    // count transactions
+    	client.NotifyNewTransactions(true)
 
 	for {
-		log.Println("LN 55")
+
 		StartTime := time.Now().Unix()
 		data, err := client.ListTransactionsCount("", 100)
-		
-		log.Println("LN 59")
+
 		// Client
 		if err != nil {
 			log.Printf("ListTransactionsCount RPC Error: %s", err)
 			break
 		} else {
-            txn := data[0]
+			txn := data[0]
 			for {
-				log.Println("LN 67")
+
 				TxnArray, err := client.ListTransactionsCount("", 100)
 				if err != nil {
 					log.Printf("ListTransactionsCount RPC Error: %s", err)
 					break
 				}
-                log.Println("LN 73")
+
 				log.Println("Checking Transactions")
 				var TxnFound bool = true
 
@@ -122,6 +108,8 @@ func main() {
 			}
 		}
 	}
+
+
 
 	// shutdown with ctrl-c
 	c := make(chan os.Signal, 1)
