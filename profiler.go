@@ -5,14 +5,15 @@
 package main
 
 import (
-    "fmt"
-    "github.com/conformal/btcjson"
+	"fmt"
+	"github.com/conformal/btcjson"
 	"io/ioutil"
 	"log"
+	"os"
+	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"time"
-	"os/signal"
-	"os"
 
 	"github.com/conformal/btcrpcclient"
 	"github.com/conformal/btcutil"
@@ -26,10 +27,11 @@ func Serialize(item btcjson.ListTransactionsResult) string {
 }
 
 func main() {
-   connected := make(chan struct{})
-    var firstConn bool
+	var cmd *exec.Cmd
+	connected := make(chan struct{})
+	var firstConn bool
 	// based off of btcwebsocket example for reference
-	ntfnHandlers := btcrpcclient.NotificationHandlers{		
+	ntfnHandlers := btcrpcclient.NotificationHandlers{
 		OnBtcdConnected: func(conn bool) {
 			if conn && !firstConn {
 				firstConn = true
@@ -44,6 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	connCfg := &btcrpcclient.ConnConfig{
 		Host:         "localhost:18556",
 		Endpoint:     "ws",
@@ -56,9 +59,35 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Wait for btcd to connect
+	<-connected
 
-    // count transactions
-    	client.NotifyNewTransactions(true)
+	// Create the wallet.
+	if err := client.CreateEncryptedWallet("walletpass"); err != nil {
+		if err := cmd.Process.Kill(); err != nil {
+			log.Printf("Cannot kill wallet process after failed "+
+				"wallet creation: %v", err)
+		}
+		dir, err := ioutil.TempDir("", "profile")
+		if err != nil {
+			log.Printf("Cannot create temp directory: %v", err)
+		}
+		if err := os.RemoveAll(dir); err != nil {
+			log.Printf("Cannot remove actor directory after "+
+				"failed wallet creation: %v", err)
+		}
+		
+	}
+
+	// Unlock wallet.
+
+	if err := client.WalletPassphrase("walletpass", 3600); err != nil {
+		log.Printf("%s: Cannot unlock wallet: %v", "localhost:18556", err)
+
+	}
+
+	// count transactions
+	client.NotifyNewTransactions(true)
 
 	for {
 
@@ -108,8 +137,6 @@ func main() {
 			}
 		}
 	}
-
-
 
 	// shutdown with ctrl-c
 	c := make(chan os.Signal, 1)
