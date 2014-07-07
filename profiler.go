@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
+	//"os/exec"
 	"os/signal"
 	"path/filepath"
 	"time"
@@ -27,7 +27,7 @@ func Serialize(item btcjson.ListTransactionsResult) string {
 }
 
 func main() {
-	var cmd *exec.Cmd
+	//var cmd *exec.Cmd
 	connected := make(chan struct{})
 	var firstConn bool
 	// based off of btcwebsocket example for reference
@@ -41,14 +41,14 @@ func main() {
 	}
 
 	// Connect to local btcwallet RPC server using websockets.
-	certHomeDir := btcutil.AppDataDir("btcd", false)
+	certHomeDir := btcutil.AppDataDir("btcwallet", false)
 	certs, err := ioutil.ReadFile(filepath.Join(certHomeDir, "rpc.cert"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	connCfg := &btcrpcclient.ConnConfig{
-		Host:         "localhost:18556",
+		Host:         "localhost:18554",
 		Endpoint:     "ws",
 		User:         "rpcuser",
 		Pass:         "rpcpass",
@@ -58,29 +58,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Wait for btcd to connect
-	<-connected
-
-	// Create the wallet.
-	if err := client.CreateEncryptedWallet("walletpass"); err != nil {
-		if err := cmd.Process.Kill(); err != nil {
-			log.Printf("Cannot kill wallet process after failed "+
-				"wallet creation: %v", err)
-		}
-		dir, err := ioutil.TempDir("", "profile")
-		if err != nil {
-			log.Printf("Cannot create temp directory: %v", err)
-		}
-		if err := os.RemoveAll(dir); err != nil {
-			log.Printf("Cannot remove actor directory after "+
-				"failed wallet creation: %v", err)
-		}
-		
-	}
-
+	log.Println("Waiting for BTCD")	
+    
 	// Unlock wallet.
-
+	log.Println("Unlock Wallet")
 	if err := client.WalletPassphrase("walletpass", 3600); err != nil {
 		log.Printf("%s: Cannot unlock wallet: %v", "localhost:18556", err)
 
@@ -88,7 +69,7 @@ func main() {
 
 	// count transactions
 	client.NotifyNewTransactions(true)
-
+	log.Println("Monitoring TXns")
 	for {
 
 		StartTime := time.Now().Unix()
