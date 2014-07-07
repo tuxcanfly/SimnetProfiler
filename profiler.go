@@ -58,8 +58,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Waiting for BTCD")	
-    
+	log.Println("Waiting for BTCD")
+	<-connected
+
 	// Unlock wallet.
 	log.Println("Unlock Wallet")
 	if err := client.WalletPassphrase("walletpass", 3600); err != nil {
